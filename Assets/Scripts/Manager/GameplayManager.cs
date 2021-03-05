@@ -13,37 +13,29 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private bool drawSpawnPosition;
     [SerializeField] private bool drawPreviewPosition;
 #endif
+
     [Header("Gameplay Settings")]
-    [SerializeField] int width;
-    [SerializeField] int height;
-    [SerializeField] Vector2Int lowerLeftCorner;
-    [SerializeField] Tetromino[] tetrominos;
-    [SerializeField] Vector3Int spawnPosition;
-    [SerializeField] Vector3 previewPosition;
-    [SerializeField] float previewScale = 0.5f;
-    [SerializeField] float difficultyScale = .9f;
+    [SerializeField] private int width;
+    [SerializeField] private int height;
+    [SerializeField] private Vector2Int lowerLeftCorner;
+    [SerializeField] private Tetromino[] tetrominos;
+    [SerializeField] private Vector3Int spawnPosition;
+    [SerializeField] private Vector3 previewPosition;
+    [SerializeField] private float previewScale = 0.5f;
+    [SerializeField] private float difficultyScale = .9f;
 
     [Header("Score and Level")]
-    [SerializeField] ScoreUI scoreUI;
-    [SerializeField] int scoreBasePoints = 50;
-    [SerializeField] LevelUI levelUI;
+    [SerializeField] private TextUI scoreUI;
+    [SerializeField] private int scoreBasePoints = 50;
+    [SerializeField] private TextUI levelUI;
 
-    TetrisGrid grid;
-    Tetromino currentTetromino;
-    Tetromino nextTetromino;
-    GameObject blocksOnGrid;
-    float tetrominoSpeed = 1f;
-    int level;
-    int score;
-
-    private void Awake()
-    {
-        if (!scoreUI)
-            scoreUI = FindObjectOfType<ScoreUI>();
-
-        if (!levelUI)
-            levelUI = FindObjectOfType<LevelUI>();
-    }
+    private TetrisGrid grid;
+    private Tetromino currentTetromino;
+    private Tetromino nextTetromino;
+    private GameObject blocksOnGrid;
+    private float tetrominoSpeed = 1f;
+    private int level;
+    private int score;
 
     private void Start()
     {
@@ -70,14 +62,14 @@ public class GameplayManager : MonoBehaviour
     public void StartGame()
     {
         Debug.LogWarning("StartGame not fully implemented yet");
-        Tetromino.OnMovementEnded += Tetromino_OnMovementEnded;
+        Tetromino.OnEnd += Tetromino_OnMovementEnded;
 
         blocksOnGrid = new GameObject("Blocks On Grid");
 
         score = 0;
-        scoreUI.UpdateScore(score);
+        scoreUI.SetText(score.ToString());
         level = 1;
-        levelUI.UpdateLevel(level);
+        levelUI.SetText(level.ToString());
 
         CreateGrid();
         SpawnTetromino();
@@ -86,7 +78,7 @@ public class GameplayManager : MonoBehaviour
     public void EndGame()
     {
         Debug.LogWarning("EndGame not fully implemented yet");
-        Tetromino.OnMovementEnded -= Tetromino_OnMovementEnded;
+        Tetromino.OnEnd -= Tetromino_OnMovementEnded;
     }
 
     public void CreateGrid()
@@ -190,7 +182,7 @@ public class GameplayManager : MonoBehaviour
     private void UpdateScore(int rowsCleared)
     {
         score += scoreBasePoints * rowsCleared * level;
-        scoreUI.UpdateScore(score);
+        scoreUI.SetText(score.ToString());
     }
 
     private void IncreaseDifficulty()
@@ -198,7 +190,7 @@ public class GameplayManager : MonoBehaviour
         tetrominoSpeed *= difficultyScale;
 
         level++;
-        levelUI.UpdateLevel(level);
+        levelUI.SetText(level.ToString());
     }
 
     private void OnDrawGizmos()

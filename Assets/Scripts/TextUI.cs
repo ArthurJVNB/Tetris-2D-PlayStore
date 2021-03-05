@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class LevelUI : MonoBehaviour
+public class TextUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI text;
 
-    public void UpdateLevel(int value)
+    public void SetText(string text)
     {
-        text.text = value.ToString();
+        this.text.text = text;
     }
 }
