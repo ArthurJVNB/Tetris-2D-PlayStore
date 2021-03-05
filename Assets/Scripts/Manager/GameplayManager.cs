@@ -13,21 +13,29 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private bool drawSpawnPosition;
     [SerializeField] private bool drawPreviewPosition;
 #endif
-    [Header("Gameplay Settings")]
-    [SerializeField] int width;
-    [SerializeField] int height;
-    [SerializeField] Vector2Int lowerLeftCorner;
-    [SerializeField] Tetromino[] tetrominos;
-    [SerializeField] Vector3Int spawnPosition;
-    [SerializeField] Vector3 previewPosition;
-    [SerializeField] float previewScale = 0.5f;
-    [SerializeField] float difficultyScale = .9f;
 
-    TetrisGrid grid;
-    Tetromino currentTetromino;
-    Tetromino nextTetromino;
-    GameObject blocksOnGrid;
-    float tetrominoSpeed = 1f;
+    [Header("Gameplay Settings")]
+    [SerializeField] private int width;
+    [SerializeField] private int height;
+    [SerializeField] private Vector2Int lowerLeftCorner;
+    [SerializeField] private Tetromino[] tetrominos;
+    [SerializeField] private Vector3Int spawnPosition;
+    [SerializeField] private Vector3 previewPosition;
+    [SerializeField] private float previewScale = 0.5f;
+    [SerializeField] private float difficultyScale = .9f;
+
+    [Header("Score and Level")]
+    [SerializeField] private TextUI scoreUI;
+    [SerializeField] private int scoreBasePoints = 50;
+    [SerializeField] private TextUI levelUI;
+
+    private TetrisGrid grid;
+    private Tetromino currentTetromino;
+    private Tetromino nextTetromino;
+    private GameObject blocksOnGrid;
+    private float tetrominoSpeed = 1f;
+    private int level;
+    private int score;
 
     private void Start()
     {
@@ -54,9 +62,14 @@ public class GameplayManager : MonoBehaviour
     public void StartGame()
     {
         Debug.LogWarning("StartGame not fully implemented yet");
-        Tetromino.OnMovementEnded += Tetromino_OnMovementEnded;
+        Tetromino.OnEnd += Tetromino_OnMovementEnded;
 
         blocksOnGrid = new GameObject("Blocks On Grid");
+
+        score = 0;
+        scoreUI.SetText(score.ToString());
+        level = 1;
+        levelUI.SetText(level.ToString());
 
         CreateGrid();
         SpawnTetromino();
@@ -65,7 +78,7 @@ public class GameplayManager : MonoBehaviour
     public void EndGame()
     {
         Debug.LogWarning("EndGame not fully implemented yet");
-        Tetromino.OnMovementEnded -= Tetromino_OnMovementEnded;
+        Tetromino.OnEnd -= Tetromino_OnMovementEnded;
     }
 
     public void CreateGrid()
@@ -105,22 +118,24 @@ public class GameplayManager : MonoBehaviour
     {
         foreach (var block in tetromino.Blocks)
         {
-            if(!grid.IsInside(Vector2Int.RoundToInt(block.position), true))
+            // Check end game
+            if (!grid.IsInside(Vector2Int.RoundToInt(block.position), true))
             {
                 EndGame();
                 yield break;
             }
-        }
-
-        foreach (var block in tetromino.Blocks)
-        {
-            grid.Occupy(block);
-            block.SetParent(blocksOnGrid.transform);
+            else
+            {
+                // Occupy grid
+                grid.Occupy(block);
+                block.SetParent(blocksOnGrid.transform);
+            }
         }
 
         Destroy(tetromino.gameObject);
 
         bool willIncreaseDifficulty = false;
+        int rowsCleared = 0;
         while (grid.GetFullRow(out Transform[] blocks))
         {
             int y = (int)blocks[0].position.y;
@@ -128,28 +143,22 @@ public class GameplayManager : MonoBehaviour
             // Clear row that is full
             foreach (var block in blocks)
             {
-                grid.Deoccupy(block.position);
-                Destroy(block.gameObject);
+                ClearBlock(block);
             }
 
-
-
-            // vvvvvv Estava fazendo isso vvvvvv
-            // TODO: Detect all group of blocks above y
             Transform[] blocksAboveY = grid.GetAllBlocksAbove(y);
-
-
-            // TODO: Move down all those groups
             foreach (var block in blocksAboveY)
             {
-                grid.Deoccupy(block.position);
-                block.transform.position += Vector3Int.down;
-                grid.Occupy(block);
+                MoveDownBlock(block);
             }
 
-            yield return new WaitForSeconds(difficultyScale);
+            yield return new WaitForSeconds(tetrominoSpeed);
             willIncreaseDifficulty = true;
+            rowsCleared++;
         }
+
+        if (rowsCleared > 0)
+            UpdateScore(rowsCleared);
 
         if (willIncreaseDifficulty)
             IncreaseDifficulty();
@@ -157,17 +166,31 @@ public class GameplayManager : MonoBehaviour
         SpawnTetromino();
     }
 
-    private void MoveDownBlocks(Transform[] blocks)
+    private void ClearBlock(Transform block)
     {
-        foreach (var block in blocks)
-        {
-            block.position += Vector3Int.down;
-        }
+        grid.Deoccupy(block.position);
+        Destroy(block.gameObject);
+    }
+
+    private void MoveDownBlock(Transform block)
+    {
+        grid.Deoccupy(block.position);
+        block.transform.position += Vector3Int.down;
+        grid.Occupy(block);
+    }
+
+    private void UpdateScore(int rowsCleared)
+    {
+        score += scoreBasePoints * rowsCleared * level;
+        scoreUI.SetText(score.ToString());
     }
 
     private void IncreaseDifficulty()
     {
         tetrominoSpeed *= difficultyScale;
+
+        level++;
+        levelUI.SetText(level.ToString());
     }
 
     private void OnDrawGizmos()

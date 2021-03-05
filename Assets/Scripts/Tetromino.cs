@@ -5,23 +5,35 @@ using UnityEngine;
 
 public class Tetromino : MonoBehaviour
 {
-    private const float FASTER = .9f;
+    public static event Action OnStart;
+    public static event Action OnAnyMovement;
+    public static event Action OnRotation;
+    public static event Action<Tetromino> OnEnd;
 
-    public static event Action<Tetromino> OnMovementEnded;
+    private const float FASTER = .9f;
 
     public Transform[] Blocks { get; private set; }
 
-    [SerializeField] private float timeToMoveDown;
-    // TODO: pivot
-    [SerializeField] private Vector3 pivot;
+#if UNITY_EDITOR
     [SerializeField] private bool _debugPivot;
+#endif
+
+    [SerializeField] private float timeToMoveDown;
+    [SerializeField] private Vector3 pivot;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip movementAudio;
+    [SerializeField] private AudioClip rotationAudio;
+    [SerializeField] private AudioClip endAudio;
 
     private float timeNextMoveDown;
     private GameplayManager gameplay;
+    private IAudioPlayer audioPlayer;
 
     private void Awake()
     {
         Blocks = Util.GetChildren(transform);
+        audioPlayer = GetComponent<IAudioPlayer>();
 
         enabled = false;
     }
@@ -40,32 +52,53 @@ public class Tetromino : MonoBehaviour
         MoveDown();
     }
 
+    private void SubscribeToMyEvents()
+    {
+        OnStart += Tetromino_OnStart;
+        OnEnd += Tetromino_OnEnd;
+        OnAnyMovement += Tetromino_OnAnyMovement;
+        OnRotation += Tetromino_OnRotation;
+    }
+
+    private void UnsubscribeFromMyEvents()
+    {
+        OnStart -= Tetromino_OnStart;
+        OnEnd -= Tetromino_OnEnd;
+        OnAnyMovement -= Tetromino_OnAnyMovement;
+        OnRotation -= Tetromino_OnRotation;
+    }
+
+    private void Tetromino_OnStart()
+    {
+        Debug.LogWarning("Tetromino_OnStart not implemented");
+    }
+
+    private void Tetromino_OnEnd(Tetromino obj)
+    {
+        audioPlayer.Play(endAudio);
+        Debug.Log("Playing endAudio");
+    }
+
+    private void Tetromino_OnAnyMovement()
+    {
+        audioPlayer.Play(movementAudio);
+    }
+
+    private void Tetromino_OnRotation()
+    {
+        audioPlayer.Play(rotationAudio);
+    }
+
     public void Initialize(float timeToMoveDown, GameplayManager gameplayInstance)
     {
         this.timeToMoveDown = timeToMoveDown;
         this.gameplay = gameplayInstance;
 
-        // subscribe inputs
-        //PlayerInputManager.OnSidewaysPressed += HandleMovement;
-        //PlayerInputManager.OnDownBeingPressed += MoveDownFaster;
+        SubscribeToMyEvents();
 
         UpdateNextTimeToMoveDown();
+        OnStart?.Invoke();
         enabled = true;
-    }
-
-    private void HandleMovement(Direction direction)
-    {
-        switch (direction)
-        {
-            case Direction.Left:
-                MoveLeft();
-                break;
-            case Direction.Right:
-                MoveRight();
-                break;
-            default:
-                break;
-        }
     }
 
     private void MoveLeft()
@@ -73,6 +106,8 @@ public class Tetromino : MonoBehaviour
         transform.position += Vector3Int.left;
         if (!gameplay.IsMovementValid(Blocks))
             transform.position -= Vector3Int.left;
+
+        OnAnyMovement?.Invoke();
     }
 
     private void MoveRight()
@@ -80,6 +115,8 @@ public class Tetromino : MonoBehaviour
         transform.position += Vector3Int.right;
         if (!gameplay.IsMovementValid(Blocks))
             transform.position -= Vector3Int.right;
+
+        OnAnyMovement?.Invoke();
     }
 
     public void Rotate(bool clockwise)
@@ -87,6 +124,8 @@ public class Tetromino : MonoBehaviour
         transform.RotateAround(transform.TransformPoint(pivot), Vector3.forward, clockwise ? -90 : 90);
         if (!gameplay.IsMovementValid(Blocks))
             transform.RotateAround(transform.TransformPoint(pivot), Vector3.forward, clockwise ? 90 : -90);
+
+        OnRotation?.Invoke();
     }
 
     private void MoveDown()
@@ -103,6 +142,10 @@ public class Tetromino : MonoBehaviour
                 // MOVEMENT ENDED
                 FinalizeMovement();
             }
+            else
+            {
+                OnAnyMovement?.Invoke();
+            }
         }
     }
 
@@ -113,13 +156,10 @@ public class Tetromino : MonoBehaviour
 
     private void FinalizeMovement()
     {
+        OnEnd?.Invoke(this);
+
+        UnsubscribeFromMyEvents();
         enabled = false;
-
-        // unsubscribe inputs
-        //PlayerInputManager.OnSidewaysPressed -= HandleMovement;
-        //PlayerInputManager.OnDownBeingPressed -= MoveDownFaster;
-
-        OnMovementEnded?.Invoke(this);
     }
 
     private void OnDrawGizmos()
