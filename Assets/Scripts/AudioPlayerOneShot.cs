@@ -10,4 +10,9 @@ public class AudioPlayerOneShot : MonoBehaviour, IAudioPlayer
     {
         audioSource.PlayOneShot(audio);
     }
+
+    public bool IsPlaying()
+    {
+        return audioSource.isPlaying;
+    }
 }

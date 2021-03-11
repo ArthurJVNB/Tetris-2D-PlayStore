@@ -30,6 +30,38 @@ public class Tetromino : MonoBehaviour
     private GameplayManager gameplay;
     private IAudioPlayer audioPlayer;
 
+    public void Initialize(float timeToMoveDown, GameplayManager gameplayInstance)
+    {
+        this.timeToMoveDown = timeToMoveDown;
+        this.gameplay = gameplayInstance;
+
+        SubscribeToMyEvents();
+
+        UpdateNextTimeToMoveDown();
+        OnStart?.Invoke();
+        enabled = true;
+    }
+
+    public void Destroy()
+    {
+        StartCoroutine(DestroyRoutine());
+    }
+
+    private IEnumerator DestroyRoutine()
+    {
+        if (audioPlayer != null)
+        {
+            yield return new WaitForSeconds(1);
+            while (audioPlayer.IsPlaying())
+            {
+                yield return null;
+            }
+        }
+
+        UnsubscribeFromMyEvents();
+        Destroy(gameObject);
+    }
+
     private void Awake()
     {
         Blocks = Util.GetChildren(transform);
@@ -89,18 +121,6 @@ public class Tetromino : MonoBehaviour
         audioPlayer.Play(rotationAudio);
     }
 
-    public void Initialize(float timeToMoveDown, GameplayManager gameplayInstance)
-    {
-        this.timeToMoveDown = timeToMoveDown;
-        this.gameplay = gameplayInstance;
-
-        SubscribeToMyEvents();
-
-        UpdateNextTimeToMoveDown();
-        OnStart?.Invoke();
-        enabled = true;
-    }
-
     private void MoveLeft()
     {
         transform.position += Vector3Int.left;
@@ -119,7 +139,7 @@ public class Tetromino : MonoBehaviour
         OnAnyMovement?.Invoke();
     }
 
-    public void Rotate(bool clockwise)
+    private void Rotate(bool clockwise)
     {
         transform.RotateAround(transform.TransformPoint(pivot), Vector3.forward, clockwise ? -90 : 90);
         if (!gameplay.IsMovementValid(Blocks))
@@ -158,7 +178,7 @@ public class Tetromino : MonoBehaviour
     {
         OnEnd?.Invoke(this);
 
-        UnsubscribeFromMyEvents();
+        //UnsubscribeFromMyEvents();
         enabled = false;
     }
 

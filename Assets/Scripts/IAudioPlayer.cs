@@ -5,4 +5,5 @@ using UnityEngine;
 public interface IAudioPlayer
 {
     void Play(AudioClip audio);
+    bool IsPlaying();
 }

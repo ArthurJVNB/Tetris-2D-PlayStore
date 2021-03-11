@@ -132,7 +132,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        Destroy(tetromino.gameObject);
+        tetromino.Destroy();
 
         bool willIncreaseDifficulty = false;
         int rowsCleared = 0;
