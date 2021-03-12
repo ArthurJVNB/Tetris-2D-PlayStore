@@ -29,6 +29,9 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private int scoreBasePoints = 50;
     [SerializeField] private TextUI levelUI;
 
+    [Header("Extras")]
+    [SerializeField] private EffectsManager effects;
+
     private TetrisGrid grid;
     private Tetromino currentTetromino;
     private Tetromino nextTetromino;
@@ -36,11 +39,6 @@ public class GameplayManager : MonoBehaviour
     private float tetrominoSpeed = 1f;
     private int level;
     private int score;
-
-    private void Start()
-    {
-        StartGame();
-    }
 
     public bool IsMovementValid(Transform[] blocks)
     {
@@ -62,7 +60,7 @@ public class GameplayManager : MonoBehaviour
     public void StartGame()
     {
         Debug.LogWarning("StartGame not fully implemented yet");
-        Tetromino.OnEnd += Tetromino_OnMovementEnded;
+        SubscribeEvents();
 
         blocksOnGrid = new GameObject("Blocks On Grid");
 
@@ -78,7 +76,9 @@ public class GameplayManager : MonoBehaviour
     public void EndGame()
     {
         Debug.LogWarning("EndGame not fully implemented yet");
-        Tetromino.OnEnd -= Tetromino_OnMovementEnded;
+        UnsubscribeEvents();
+
+        effects?.PlayAudio(AudioType.GameOver);
     }
 
     public void CreateGrid()
@@ -118,7 +118,7 @@ public class GameplayManager : MonoBehaviour
     {
         foreach (var block in tetromino.Blocks)
         {
-            // Check end game
+            // Check end game (game over)
             if (!grid.IsInside(Vector2Int.RoundToInt(block.position), true))
             {
                 EndGame();
@@ -145,6 +145,7 @@ public class GameplayManager : MonoBehaviour
             {
                 ClearBlock(block);
             }
+            effects?.PlayAudio(AudioType.RowClearing);
 
             Transform[] blocksAboveY = grid.GetAllBlocksAbove(y);
             foreach (var block in blocksAboveY)
@@ -191,6 +192,23 @@ public class GameplayManager : MonoBehaviour
 
         level++;
         levelUI.SetText(level.ToString());
+    }
+
+    private void SubscribeEvents()
+    {
+        Tetromino.OnEnd += Tetromino_OnMovementEnded;
+    }
+
+    private void UnsubscribeEvents()
+    {
+        Tetromino.OnEnd -= Tetromino_OnMovementEnded;
+    }
+
+    
+
+    private void Start()
+    {
+        StartGame();
     }
 
     private void OnDrawGizmos()
