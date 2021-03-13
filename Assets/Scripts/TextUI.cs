@@ -5,10 +5,10 @@ using TMPro;
 
 public class TextUI : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private TextMeshProUGUI textToChange;
 
     public void SetText(string text)
     {
-        this.text.text = text;
+        this.textToChange.text = text;
     }
 }

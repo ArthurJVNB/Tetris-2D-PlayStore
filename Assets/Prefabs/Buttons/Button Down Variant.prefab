@@ -10,7 +10,7 @@ PrefabInstance:
     - target: {fileID: 7937382525617726290, guid: 5cd56412b49a5da4c9cf5411a51e0e88,
         type: 3}
       propertyPath: m_Name
-      value: Button Down
+      value: Button Down Variant
       objectReference: {fileID: 0}
     - target: {fileID: 7937382525617726291, guid: 5cd56412b49a5da4c9cf5411a51e0e88,
         type: 3}
@@ -186,6 +186,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_text
       value: Down
+      objectReference: {fileID: 0}
+    - target: {fileID: 7937382525886734958, guid: 5cd56412b49a5da4c9cf5411a51e0e88,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 28
+      objectReference: {fileID: 0}
+    - target: {fileID: 7937382525886734958, guid: 5cd56412b49a5da4c9cf5411a51e0e88,
+        type: 3}
+      propertyPath: m_fontSizeBase
+      value: 28
+      objectReference: {fileID: 0}
+    - target: {fileID: 7937382525886734958, guid: 5cd56412b49a5da4c9cf5411a51e0e88,
+        type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5cd56412b49a5da4c9cf5411a51e0e88, type: 3}

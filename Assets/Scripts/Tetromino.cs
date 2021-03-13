@@ -182,6 +182,7 @@ public class Tetromino : MonoBehaviour
         enabled = false;
     }
 
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         if (_debugPivot)
@@ -189,5 +190,6 @@ public class Tetromino : MonoBehaviour
             Gizmos.color = Color.magenta;
             Gizmos.DrawWireSphere(transform.TransformPoint(pivot), .5f);
         }
-    }
+    } 
+#endif
 }
