@@ -8,6 +8,17 @@ public class AudioPlayerOneShot : MonoBehaviour, IAudioPlayer
 
     public void Play(AudioClip audio)
     {
-        audioSource.PlayOneShot(audio);
+        audioSource?.PlayOneShot(audio);
+    }
+
+    public bool IsPlaying()
+    {
+        return audioSource.isPlaying;
+    }
+
+    private void Awake()
+    {
+        if (!audioSource)
+            audioSource = GetComponent<AudioSource>();
     }
 }

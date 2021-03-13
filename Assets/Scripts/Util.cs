@@ -16,4 +16,13 @@ public static class Util
 
         return children;
     }
+
+    public static void DestroyChildren(Transform parent)
+    {
+        Transform[] children = GetChildren(parent);
+        foreach (var child in children)
+        {
+            Object.Destroy(child.gameObject);
+        }
+    }
 }
