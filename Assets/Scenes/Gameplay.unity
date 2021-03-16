@@ -1086,7 +1086,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rowClearingAudio: {fileID: 8300000, guid: c3dd0e9179ac57843b3c130a14ff900b, type: 3}
+  rowAudioVolume: 0.1
   gameOverAudio: {fileID: 8300000, guid: 714d6a9c77c633348a0b1c95eb496b01, type: 3}
+  gameOverAudioVolume: 0.1
 --- !u!114 &731315142
 MonoBehaviour:
   m_ObjectHideFlags: 0

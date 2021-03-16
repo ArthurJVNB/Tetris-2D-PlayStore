@@ -52,9 +52,15 @@ MonoBehaviour:
   _debugPivot: 1
   timeToMoveDown: 0.8
   pivot: {x: 0, y: 0, z: 0}
-  movementAudio: {fileID: 8300000, guid: 3e4d33e348ac07743986e849a46cf59f, type: 3}
+  strafeMovementAudio: {fileID: 8300000, guid: 3e4d33e348ac07743986e849a46cf59f, type: 3}
+  strafeAudioVolume: 0.1
+  downMovementAudio: {fileID: 8300000, guid: 3e4d33e348ac07743986e849a46cf59f, type: 3}
+  downAudioVolume: 1
+  willPlayDownMovementAudio: 0
   rotationAudio: {fileID: 8300000, guid: 87b89b34980f8634b887b50c6ba8b8b4, type: 3}
+  rotationAudioVolume: 0.3
   endAudio: {fileID: 8300000, guid: 9a608be92f059b54285ab7f0263825da, type: 3}
+  endAudioVolume: 0.1
 --- !u!82 &-5026259968472107562
 AudioSource:
   m_ObjectHideFlags: 0

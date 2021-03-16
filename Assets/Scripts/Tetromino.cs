@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Tetromino : MonoBehaviour
+public class Tetromino : MonoBehaviour, IDestroyable
 {
     public static event Action OnStart;
-    public static event Action OnAnyMovement;
+    public static event Action OnStrafeMovement;
+    public static event Action OnDownMovement;
     public static event Action OnRotation;
     public static event Action<Tetromino> OnEnd;
 
@@ -21,10 +22,29 @@ public class Tetromino : MonoBehaviour
     [SerializeField] private float timeToMoveDown;
     [SerializeField] private Vector3 pivot;
 
+    #region Audio Config
     [Header("Audio")]
-    [SerializeField] private AudioClip movementAudio;
+    [SerializeField] private AudioClip strafeMovementAudio;
+    [Range(0, 1)]
+    [SerializeField] private float strafeAudioVolume = 1f;
+
+    [Space]
+    [SerializeField] private AudioClip downMovementAudio;
+    [Range(0, 1)]
+    [SerializeField] private float downAudioVolume = 1f;
+    [Tooltip("Play down movement audio?")]
+    [SerializeField] private bool willPlayDownMovementAudio = false;
+
+    [Space]
     [SerializeField] private AudioClip rotationAudio;
+    [Range(0, 1)]
+    [SerializeField] private float rotationAudioVolume = 1f;
+
+    [Space]
     [SerializeField] private AudioClip endAudio;
+    [Range(0, 1)]
+    [SerializeField] private float endAudioVolume = 1f;
+    #endregion
 
     private float timeNextMoveDown;
     private GameplayManager gameplay;
@@ -35,7 +55,7 @@ public class Tetromino : MonoBehaviour
         this.timeToMoveDown = timeToMoveDown;
         this.gameplay = gameplayInstance;
 
-        SubscribeToMyEvents();
+        //SubscribeToMyEvents();
 
         UpdateNextTimeToMoveDown();
         OnStart?.Invoke();
@@ -51,74 +71,23 @@ public class Tetromino : MonoBehaviour
     {
         if (audioPlayer != null)
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(timeToMoveDown);
             while (audioPlayer.IsPlaying())
             {
                 yield return null;
             }
         }
 
-        UnsubscribeFromMyEvents();
+        //UnsubscribeFromMyEvents();
         Destroy(gameObject);
     }
 
-    private void Awake()
+    private void FinalizeMovement()
     {
-        Blocks = Util.GetChildren(transform);
-        audioPlayer = GetComponent<IAudioPlayer>();
+        OnEnd?.Invoke(this);
 
+        //UnsubscribeFromMyEvents();
         enabled = false;
-    }
-
-    private void Update()
-    {
-        if (PlayerInputManager.IsLeftPressed)
-            MoveLeft();
-        if (PlayerInputManager.IsRightPressed)
-            MoveRight();
-        if (PlayerInputManager.IsRotateClockwisePressed)
-            Rotate(true);
-        if (PlayerInputManager.IsRotateAnticlockwisePressed)
-            Rotate(false);
-
-        MoveDown();
-    }
-
-    private void SubscribeToMyEvents()
-    {
-        OnStart += Tetromino_OnStart;
-        OnEnd += Tetromino_OnEnd;
-        OnAnyMovement += Tetromino_OnAnyMovement;
-        OnRotation += Tetromino_OnRotation;
-    }
-
-    private void UnsubscribeFromMyEvents()
-    {
-        OnStart -= Tetromino_OnStart;
-        OnEnd -= Tetromino_OnEnd;
-        OnAnyMovement -= Tetromino_OnAnyMovement;
-        OnRotation -= Tetromino_OnRotation;
-    }
-
-    private void Tetromino_OnStart()
-    {
-        Debug.LogWarning("Tetromino_OnStart not implemented");
-    }
-
-    private void Tetromino_OnEnd(Tetromino obj)
-    {
-        audioPlayer.Play(endAudio);
-        Debug.Log("Playing endAudio");
-    }
-
-    private void Tetromino_OnAnyMovement()
-    {
-        audioPlayer.Play(movementAudio);
-    }
-
-    private void Tetromino_OnRotation()
-    {
-        audioPlayer.Play(rotationAudio);
     }
 
     private void MoveLeft()
@@ -127,7 +96,7 @@ public class Tetromino : MonoBehaviour
         if (!gameplay.IsMovementValid(Blocks))
             transform.position -= Vector3Int.left;
 
-        OnAnyMovement?.Invoke();
+        OnStrafeMovement?.Invoke();
     }
 
     private void MoveRight()
@@ -136,7 +105,7 @@ public class Tetromino : MonoBehaviour
         if (!gameplay.IsMovementValid(Blocks))
             transform.position -= Vector3Int.right;
 
-        OnAnyMovement?.Invoke();
+        OnStrafeMovement?.Invoke();
     }
 
     private void Rotate(bool clockwise)
@@ -164,7 +133,7 @@ public class Tetromino : MonoBehaviour
             }
             else
             {
-                OnAnyMovement?.Invoke();
+                OnDownMovement?.Invoke();
             }
         }
     }
@@ -174,12 +143,81 @@ public class Tetromino : MonoBehaviour
         timeNextMoveDown = Time.time + timeToMoveDown;
     }
 
-    private void FinalizeMovement()
+    private void SubscribeToMyEvents()
     {
-        OnEnd?.Invoke(this);
+        OnStart += Tetromino_OnStart;
+        OnEnd += Tetromino_OnEnd;
+        OnStrafeMovement += Tetromino_OnStrafeMovement;
+        OnDownMovement += Tetromino_OnDownMovement;
+        OnRotation += Tetromino_OnRotation;
+    }
 
-        //UnsubscribeFromMyEvents();
+
+    private void UnsubscribeFromMyEvents()
+    {
+        OnStart -= Tetromino_OnStart;
+        OnEnd -= Tetromino_OnEnd;
+        OnStrafeMovement -= Tetromino_OnStrafeMovement;
+        OnDownMovement -= Tetromino_OnDownMovement;
+        OnRotation -= Tetromino_OnRotation;
+    }
+
+    private void Tetromino_OnStart()
+    {
+        Debug.LogWarning("Tetromino_OnStart not implemented");
+    }
+
+    private void Tetromino_OnEnd(Tetromino obj)
+    {
+        audioPlayer.Play(endAudio, endAudioVolume);
+        Debug.Log("Playing endAudio");
+    }
+
+    private void Tetromino_OnStrafeMovement()
+    {
+        audioPlayer.Play(strafeMovementAudio, strafeAudioVolume);
+    }
+    private void Tetromino_OnDownMovement()
+    {
+        if (willPlayDownMovementAudio)
+            audioPlayer.Play(downMovementAudio, downAudioVolume);
+    }
+
+    private void Tetromino_OnRotation()
+    {
+        audioPlayer.Play(rotationAudio, rotationAudioVolume);
+    }
+
+    private void Awake()
+    {
+        Blocks = Util.GetChildren(transform);
+        audioPlayer = GetComponent<IAudioPlayer>();
+
         enabled = false;
+    }
+
+    private void OnEnable()
+    {
+        SubscribeToMyEvents();
+    }
+
+    private void Update()
+    {
+        if (PlayerInputManager.IsLeftPressed)
+            MoveLeft();
+        if (PlayerInputManager.IsRightPressed)
+            MoveRight();
+        if (PlayerInputManager.IsRotateClockwisePressed)
+            Rotate(true);
+        if (PlayerInputManager.IsRotateAnticlockwisePressed)
+            Rotate(false);
+
+        MoveDown();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromMyEvents();
     }
 
 #if UNITY_EDITOR
@@ -190,6 +228,6 @@ public class Tetromino : MonoBehaviour
             Gizmos.color = Color.magenta;
             Gizmos.DrawWireSphere(transform.TransformPoint(pivot), .5f);
         }
-    } 
+    }
 #endif
 }
