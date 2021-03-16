@@ -11,7 +11,12 @@ public class EffectsManager : MonoBehaviour
 {
     [Header("Audio")]
     [SerializeField] private AudioClip rowClearingAudio;
+    [Range(0, 1)]
+    [SerializeField] private float rowAudioVolume = 1f;
+
     [SerializeField] private AudioClip gameOverAudio;
+    [Range(0, 1)]
+    [SerializeField] private float gameOverAudioVolume = 1f;
 
     // TODO: Particle Effects
 
@@ -22,10 +27,10 @@ public class EffectsManager : MonoBehaviour
         switch (type)
         {
             case AudioType.RowClearing:
-                audioPlayer?.Play(rowClearingAudio);
+                audioPlayer?.Play(rowClearingAudio, rowAudioVolume);
                 break;
             case AudioType.GameOver:
-                audioPlayer?.Play(gameOverAudio);
+                audioPlayer?.Play(gameOverAudio, gameOverAudioVolume);
                 break;
             default:
                 break;

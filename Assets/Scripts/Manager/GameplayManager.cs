@@ -63,7 +63,6 @@ public class GameplayManager : MonoBehaviour
     public void StartGame()
     {
         Debug.LogWarning("StartGame not fully implemented yet");
-        SubscribeEvents();
 
         if (!blocksOnGrid)
             blocksOnGrid = new GameObject("Blocks On Grid");
@@ -83,8 +82,6 @@ public class GameplayManager : MonoBehaviour
     public void EndGame()
     {
         Debug.LogWarning("EndGame not fully implemented yet");
-
-        UnsubscribeEvents();
 
         currentTetromino.Destroy();
         nextTetromino.Destroy();
@@ -216,9 +213,19 @@ public class GameplayManager : MonoBehaviour
         Tetromino.OnEnd -= Tetromino_OnMovementEnded;
     }
 
+    private void OnEnable()
+    {
+        SubscribeEvents();
+    }
+
     private void Start()
     {
         StartGame();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeEvents();
     }
 
 #if UNITY_EDITOR
